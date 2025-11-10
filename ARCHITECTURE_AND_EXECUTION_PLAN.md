@@ -232,6 +232,7 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v0.3: Sprint 1 scaffolding added (API skeleton, worker scaffold, Terraform structure, CI pipeline, placeholders for web/mobile).
 - v0.2: Created single-source document with Flutter/Postgres/PyTorch updates; added SOC 2 plan; set per-commit update rule; included Mermaid diagrams.
 - v0.1: Initial scaffold defined (pre-approval).
 

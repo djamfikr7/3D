@@ -1,0 +1,23 @@
+{
+  "name": "capture3d-api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "lint": "echo 'TODO: add eslint' && exit 0",
+    "test": "echo 'TODO: add tests' && exit 0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0",
+    "rate-limiter-flexible": "^5.0.0",
+    "ws": "^8.18.0"
+  }
+}
