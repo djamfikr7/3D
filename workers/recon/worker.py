@@ -6,6 +6,10 @@ from botocore.config import Config
 import json as jsonlib
 import os as oslib
 from stages.feature_extraction import run_feature_extraction
+from stages.matching import run_matching
+from stages.sfm import run_sfm
+from stages.mvs import run_mvs
+from stages.meshing import run_meshing
 try:
     import botocore
 except Exception:
@@ -46,14 +50,30 @@ def process_job(job):
     payload = job.get('payload', {})
     logger.info(f"Processing job {job_id} with payload keys: {list(payload.keys())}")
     update_status(job_id, state='processing', progress=0, message='started')
-    # Stage: feature extraction (simulate or run if available)
+    t0 = time.perf_counter()
     ok = run_feature_extraction(images_dir=payload.get('images_dir','/data/images'), output_dir=payload.get('features_dir','/data/features'))
-    update_status(job_id, state='processing', progress=15 if ok else 5, message='feature_extraction')
-    pct = 15 if ok else 5
+    update_status(job_id, state='processing', progress=15 if ok else 5, message=f'feature_extraction {int((time.perf_counter()-t0)*1000)}ms')
+
+    t1 = time.perf_counter()
+    ok = run_matching(features_dir=payload.get('features_dir','/data/features'), matches_dir=payload.get('matches_dir','/data/matches'))
+    update_status(job_id, state='processing', progress=30 if ok else 18, message=f'matching {int((time.perf_counter()-t1)*1000)}ms')
+
+    t2 = time.perf_counter()
+    ok = run_sfm(matches_dir=payload.get('matches_dir','/data/matches'), sfm_dir=payload.get('sfm_dir','/data/sfm'))
+    update_status(job_id, state='processing', progress=50 if ok else 25, message=f'sfm {int((time.perf_counter()-t2)*1000)}ms')
+
+    t3 = time.perf_counter()
+    ok = run_mvs(sfm_dir=payload.get('sfm_dir','/data/sfm'), mvs_dir=payload.get('mvs_dir','/data/mvs'))
+    update_status(job_id, state='processing', progress=70 if ok else 35, message=f'mvs {int((time.perf_counter()-t3)*1000)}ms')
+
+    t4 = time.perf_counter()
+    ok = run_meshing(mvs_dir=payload.get('mvs_dir','/data/mvs'), mesh_out=payload.get('mesh_out','/data/mesh/mesh.ply'))
+    update_status(job_id, state='processing', progress=85 if ok else 50, message=f'meshing {int((time.perf_counter()-t4)*1000)}ms')
+
+    # Continue remaining simulated stages
     for name, target, delay in STAGES:
-        time.sleep(delay)
-        pct = target
-        update_status(job_id, state='processing', progress=pct, message=name)
+      time.sleep(delay)
+      update_status(job_id, state='processing', progress=target, message=name)
     # Upload a dummy artifact to MinIO/S3
     try:
         if s3:

@@ -7,7 +7,8 @@ const router = Router();
 router.get('/', async (req, res, next) => {
   try {
     const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
-    const { rows } = await pool.query('SELECT id, status as state, progress_pct as "progressPct", message FROM jobs ORDER BY created_at DESC LIMIT $1', [limit]);
+    const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
+    const { rows } = await pool.query('SELECT id, status as state, progress_pct as "progressPct", message FROM jobs ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset]);
     res.json(rows);
   } catch (e) { next(e); }
 });
