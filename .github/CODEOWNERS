@@ -1,0 +1,10 @@
+# Require approvals from owners for critical areas
+# Replace placeholders with real GitHub usernames/teams
+
+/ARCHITECTURE_AND_EXECUTION_PLAN.md @jordan-lee
+/server/api/** @marco-rossi
+/workers/** @sofia-nguyen
+/web/** @priya-patel
+/mobile/** @alex-chen
+/infra/** @jordan-lee
+/.github/** @jordan-lee

@@ -3,8 +3,16 @@ import requests
 from loguru import logger
 import boto3
 from botocore.config import Config
+import json as jsonlib
+import os as oslib
+try:
+    import botocore
+except Exception:
+    botocore = None
 
 API_BASE = os.environ.get('API_BASE', 'http://api:8080')
+QUEUE_IMPL = os.environ.get('QUEUE_IMPL', 'dev').lower()
+SQS_URL = os.environ.get('SQS_URL')
 S3_ENDPOINT = os.environ.get('S3_ENDPOINT')
 S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
 S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
@@ -54,8 +62,8 @@ def process_job(job):
     update_status(job_id, state='completed', progress=100, message='done')
 
 
-def main():
-    logger.info("Recon worker starting; polling API for jobs...")
+def poll_http_loop():
+    logger.info("Recon worker starting; polling API for jobs (dev mode)...")
     while True:
         try:
             r = requests.get(f"{API_BASE}/dev/next-job", timeout=5)
@@ -70,6 +78,31 @@ def main():
         except Exception as e:
             logger.exception(e)
             time.sleep(2)
+
+def poll_sqs_loop():
+    import boto3
+    sqs = boto3.client('sqs')
+    logger.info("Recon worker starting; polling SQS for jobs...")
+    while True:
+        try:
+            resp = sqs.receive_message(QueueUrl=SQS_URL, MaxNumberOfMessages=1, WaitTimeSeconds=10, VisibilityTimeout=600)
+            msgs = resp.get('Messages', [])
+            if not msgs:
+                continue
+            m = msgs[0]
+            payload = jsonlib.loads(m['Body'])
+            job = { 'id': payload.get('id'), 'payload': payload }
+            process_job(job)
+            sqs.delete_message(QueueUrl=SQS_URL, ReceiptHandle=m['ReceiptHandle'])
+        except Exception as e:
+            logger.exception(e)
+            time.sleep(3)
+
+def main():
+    if QUEUE_IMPL == 'sqs' and SQS_URL:
+        poll_sqs_loop()
+    else:
+        poll_http_loop()
 
 if __name__ == '__main__':
     main()

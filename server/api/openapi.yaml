@@ -24,6 +24,10 @@ paths:
                 properties:
                   job_id: { type: string }
                   events_url: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /status/{job_id}:
     get:
       summary: Get job status
@@ -39,7 +43,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
-        '404': { description: Not found }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /jobs:
     get:
       summary: List recent jobs
@@ -55,6 +62,8 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/StatusResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /jobs/{job_id}/events:
     get:
       summary: Get job event timeline
@@ -91,7 +100,37 @@ paths:
                 properties:
                   export_id: { type: string }
                   url: { type: string, format: uri }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
 components:
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
     JobCreateRequest:
       type: object

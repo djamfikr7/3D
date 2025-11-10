@@ -51,7 +51,7 @@ const specPath = path.join(__d, '../openapi.yaml');
 try {
   // dynamic import style to avoid breaking dev if spec missing
   // eslint-disable-next-line new-cap
-  await new OpenApiValidator({ apiSpec: specPath, validateRequests: true, validateResponses: false }).install(app);
+  await new OpenApiValidator({ apiSpec: specPath, validateRequests: true, validateResponses: true }).install(app);
   console.log('OpenAPI validator enabled');
 } catch (e) { console.warn('OpenAPI validator not enabled:', e.message); }
 
@@ -67,10 +67,12 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/dev', devRouter);
 }
 
-// Error handler
+// Error handler compatible with OpenAPI validator
 app.use((err, req, res, next) => {
-  console.error('[error]', err);
-  res.status(err.status || 500).json({ error: err.message || 'Internal error' });
+  const status = err.status || err.statusCode || 500;
+  const payload = { error: err.message || 'Internal error' };
+  if (err.errors) payload.details = err.errors;
+  res.status(status).json(payload);
 });
 
 const server = createServer(app);
