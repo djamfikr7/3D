@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: Capture3D API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /process:
+    post:
+      summary: Submit a reconstruction job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreateRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id: { type: string }
+                  events_url: { type: string }
+  /status/{job_id}:
+    get:
+      summary: Get job status
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '404': { description: Not found }
+  /jobs:
+    get:
+      summary: List recent jobs
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/StatusResponse' }
+  /export:
+    post:
+      summary: Create export for a job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Export created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  export_id: { type: string }
+                  url: { type: string, format: uri }
+components:
+  schemas:
+    JobCreateRequest:
+      type: object
+      required: [project_id, images_manifest]
+      properties:
+        project_id: { type: string }
+        images_manifest:
+          type: array
+          items: { type: string }
+          minItems: 1
+        preset: { type: string }
+        params: { type: object }
+    StatusResponse:
+      type: object
+      required: [id, state, progressPct]
+      properties:
+        id: { type: string }
+        state: { type: string }
+        progressPct: { type: integer, minimum: 0, maximum: 100 }
+        message: { type: string }
+    ExportRequest:
+      type: object
+      required: [job_id, format]
+      properties:
+        job_id: { type: string }
+        format: { type: string, enum: [glb, usdz, fbx, obj, ply, stl] }
+        options: { type: object }

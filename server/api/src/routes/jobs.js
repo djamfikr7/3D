@@ -4,6 +4,14 @@ import { pool } from '../lib/db.js';
 
 const router = Router();
 
+router.get('/', async (req, res, next) => {
+  try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
+    const { rows } = await pool.query('SELECT id, status as state, progress_pct as "progressPct", message FROM jobs ORDER BY created_at DESC LIMIT $1', [limit]);
+    res.json(rows);
+  } catch (e) { next(e); }
+});
+
 router.post('/', async (req, res, next) => {
   try {
     const { project_id, images_manifest, preset, params } = req.body || {};

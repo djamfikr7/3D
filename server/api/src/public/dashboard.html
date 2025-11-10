@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Capture3D Dashboard (Minimal)</title>
+    <style> body { font-family: system-ui, sans-serif; margin: 16px; } table { border-collapse: collapse; } td,th { padding: 6px 10px; border: 1px solid #ddd; } .ok{color:green} .bad{color:red} </style>
+  </head>
+  <body>
+    <h1>Jobs</h1>
+    <div id="status">Loading...</div>
+    <table id="jobs"><thead><tr><th>ID</th><th>State</th><th>Progress</th><th>Message</th></tr></thead><tbody></tbody></table>
+    <script>
+      const tbody = document.querySelector('#jobs tbody');
+      const status = document.getElementById('status');
+
+      async function loadJobs() {
+        const r = await fetch('/jobs?limit=50');
+        const data = await r.json();
+        tbody.innerHTML='';
+        for (const j of data) addOrUpdate(j);
+        status.textContent = `Loaded ${data.length} jobs`;
+      }
+
+      function addOrUpdate(j) {
+        let tr = document.getElementById(j.id);
+        if (!tr) { tr = document.createElement('tr'); tr.id = j.id; tbody.prepend(tr); }
+        tr.innerHTML = `<td>${j.id}</td><td>${j.state}</td><td>${j.progressPct||0}%</td><td>${j.message||''}</td>`;
+      }
+
+      loadJobs();
+      const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/events');
+      ws.onopen = () => { status.textContent = status.textContent + ' | WS connected'; };
+      ws.onmessage = (ev) => { try {
+        const data = JSON.parse(ev.data);
+        if (data.type === 'job.update') addOrUpdate({ id: data.job_id, state: data.state, progressPct: data.progressPct, message: data.message });
+      } catch(e){} };
+    </script>
+  </body>
+</html>

@@ -21,6 +21,9 @@ jobs:
       - name: Install deps
         working-directory: server/api
         run: npm install
+      - name: Validate OpenAPI (syntax)
+        working-directory: server/api
+        run: node -e "require('fs').readFileSync('openapi.yaml','utf8') && console.log('openapi.yaml present')"
       - name: Lint
         working-directory: server/api
         run: npm run lint

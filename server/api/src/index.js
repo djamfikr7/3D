@@ -12,6 +12,8 @@ import { WebSocketServer } from 'ws';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { init as initEvents, getStats } from './lib/events.js';
+import { OpenApiValidator } from 'express-openapi-validator';
+import pathToOpenAPI from 'path';
 
 const app = express();
 app.use(helmet());
@@ -19,6 +21,17 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+// OpenAPI validation
+import { fileURLToPath as f2u } from 'url';
+const __f = f2u(import.meta.url); const __d = path.dirname(__f);
+const specPath = path.join(__d, '../openapi.yaml');
+try {
+  // dynamic import style to avoid breaking dev if spec missing
+  // eslint-disable-next-line new-cap
+  await new OpenApiValidator({ apiSpec: specPath, validateRequests: true, validateResponses: false }).install(app);
+  console.log('OpenAPI validator enabled');
+} catch (e) { console.warn('OpenAPI validator not enabled:', e.message); }
 
 app.use(authMiddleware);
 app.use(rateLimiters.tierLimiter);
