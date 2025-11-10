@@ -2,3 +2,4 @@ boto3
 pydantic
 requests
 loguru
+watchfiles

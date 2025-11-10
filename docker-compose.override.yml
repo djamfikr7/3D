@@ -1,0 +1,13 @@
+services:
+  api:
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=1
+    volumes:
+      - ./server/api:/app
+      - /app/node_modules
+  worker:
+    command: sh -c "pip3 install -r requirements.txt && pip3 install watchfiles && watchfiles 'python3 worker.py' -w ."
+    volumes:
+      - ./workers/recon:/worker
