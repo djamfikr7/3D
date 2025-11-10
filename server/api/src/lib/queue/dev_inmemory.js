@@ -30,3 +30,8 @@ export async function updateJobStatus(id, patch) {
 export async function getJobStatus(id) {
   return jobs.get(id);
 }
+
+export async function listJobs(limit = 20, offset = 0) {
+  const all = Array.from(jobs.values()).sort((a,b)=> (b.created_at||0) - (a.created_at||0));
+  return all.slice(offset, offset+limit).map(j => ({ id: j.id, state: j.state, progressPct: j.progressPct, message: j.message }));
+}

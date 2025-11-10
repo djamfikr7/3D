@@ -31,8 +31,11 @@ router.post('/update-status', async (req, res, next) => {
     } catch (e) { /* ignore db update errors in dev */ }
     // persist event row
     try {
-      const { pool } = await import('../lib/db.js');
-      await pool.query('INSERT INTO job_events(job_id,state,progress_pct,message) VALUES ($1,$2,$3,$4)', [id, state, progressPct ?? null, message ?? null]);
+      const NO_DB = String(process.env.NO_DB || '').toLowerCase() === 'true';
+      if (!NO_DB) {
+        const { pool } = await import('../lib/db.js');
+        await pool.query('INSERT INTO job_events(job_id,state,progress_pct,message) VALUES ($1,$2,$3,$4)', [id, state, progressPct ?? null, message ?? null]);
+      }
     } catch (e) { /* ignore in dev */ }
     // broadcast event
     try {

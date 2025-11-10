@@ -11,3 +11,4 @@ export const enqueueJob = adapter.enqueueJob;
 export const dequeueNextJob = adapter.dequeueNextJob;
 export const updateJobStatus = adapter.updateJobStatus;
 export const getJobStatus = adapter.getJobStatus;
+export const listJobs = adapter.listJobs ? adapter.listJobs : async () => [];

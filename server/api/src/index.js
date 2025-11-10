@@ -88,8 +88,11 @@ app.get('/events/stats', (req, res) => res.json(getStats()));
 import { runMigrations } from './db/migrate.js';
 
 (async () => {
-  if (process.env.NODE_ENV !== 'production') {
+  const NO_DB = String(process.env.NO_DB || '').toLowerCase() === 'true';
+  if (!NO_DB && process.env.NODE_ENV !== 'production') {
     try { await runMigrations(); console.log('DB migrations up to date'); } catch (e) { console.error('Migration error', e); }
+  } else if (NO_DB) {
+    console.log('[dev] NO_DB=true: skipping migrations and DB connectivity checks');
   }
   const PORT = process.env.PORT || 8080;
   server.listen(PORT, () => console.log(`API listening on :${PORT}`));
