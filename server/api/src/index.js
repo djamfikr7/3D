@@ -41,5 +41,12 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'welcome', ts: Date.now() }));
 });
 
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`API listening on :${PORT}`));
+import { runMigrations } from './db/migrate.js';
+
+(async () => {
+  if (process.env.NODE_ENV !== 'production') {
+    try { await runMigrations(); console.log('DB migrations up to date'); } catch (e) { console.error('Migration error', e); }
+  }
+  const PORT = process.env.PORT || 8080;
+  server.listen(PORT, () => console.log(`API listening on :${PORT}`));
+})();

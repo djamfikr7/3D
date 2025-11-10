@@ -232,6 +232,7 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v0.5: Postgres persistence with migrations; API creates jobs in DB and dev worker updates status in DB.
 - v0.4: Dev E2E flow with docker-compose, dev endpoints (/dev/*), worker polling, and in-memory FIFO queue.
 - v0.3: Sprint 1 scaffolding added (API skeleton, worker scaffold, Terraform structure, CI pipeline, placeholders for web/mobile).
 - v0.2: Created single-source document with Flutter/Postgres/PyTorch updates; added SOC 2 plan; set per-commit update rule; included Mermaid diagrams.

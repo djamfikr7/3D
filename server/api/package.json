@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/index.js",
+    "migrate": "node src/db/migrate.js",
+    "dev": "npm run migrate && node --watch src/index.js",
     "start": "node src/index.js",
     "lint": "echo 'TODO: add eslint' && exit 0",
     "test": "echo 'TODO: add tests' && exit 0"
