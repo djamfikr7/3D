@@ -3,10 +3,14 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { rateLimiters } from './lib/rate.js';
+import pino from 'pino';
+import pinoHttp from 'pino-http';
+import client from 'prom-client';
 import { authMiddleware } from './lib/auth.js';
 import jobsRouter from './routes/jobs.js';
 import exportsRouter from './routes/exports.js';
 import devRouter from './routes/dev.js';
+import uploadRouter from './routes/upload.js';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import path from 'path';
@@ -16,9 +20,27 @@ import { OpenApiValidator } from 'express-openapi-validator';
 import pathToOpenAPI from 'path';
 
 const app = express();
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
+app.use(pinoHttp({ logger }));
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Metrics setup
+client.collectDefaultMetrics();
+const httpCounter = new client.Counter({ name: 'api_http_requests_total', help: 'HTTP requests', labelNames: ['method','path','status'] });
+app.use((req, res, next) => {
+  const end = res.end;
+  res.end = function(chunk, encoding, cb){
+    try { httpCounter.inc({ method: req.method, path: req.route?.path || req.path, status: res.statusCode }); } catch {}
+    return end.call(this, chunk, encoding, cb);
+  };
+  next();
+});
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
@@ -39,6 +61,7 @@ app.use(rateLimiters.tierLimiter);
 app.use('/process', jobsRouter);
 app.use('/status', jobsRouter);
 app.use('/export', exportsRouter);
+app.use('/upload', uploadRouter);
 
 if (process.env.NODE_ENV !== 'production') {
   app.use('/dev', devRouter);

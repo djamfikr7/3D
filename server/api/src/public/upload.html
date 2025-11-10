@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Upload Test</title>
+    <style> body { font-family: sans-serif; margin: 16px; } input,button { margin: 6px; } </style>
+  </head>
+  <body>
+    <h1>Presigned Upload</h1>
+    <input id="project" placeholder="project_id (optional)" />
+    <input id="files" type="file" multiple />
+    <button id="go">Upload</button>
+    <pre id="out"></pre>
+    <script>
+      const out = document.getElementById('out');
+      document.getElementById('go').onclick = async () => {
+        const files = Array.from(document.getElementById('files').files);
+        const project_id = document.getElementById('project').value || undefined;
+        const names = files.map(f => f.name);
+        const r = await fetch('/upload/init', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ project_id, files: names }) });
+        const { uploads } = await r.json();
+        for (let i=0;i<uploads.length;i++) {
+          const u = uploads[i];
+          const f = files[i];
+          await fetch(u.url, { method: 'PUT', body: f, headers: { 'Content-Type': 'application/octet-stream' } });
+        }
+        out.textContent = JSON.stringify(uploads, null, 2);
+      };
+    </script>
+  </body>
+</html>
