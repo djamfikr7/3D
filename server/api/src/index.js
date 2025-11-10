@@ -6,6 +6,7 @@ import { rateLimiters } from './lib/rate.js';
 import { authMiddleware } from './lib/auth.js';
 import jobsRouter from './routes/jobs.js';
 import exportsRouter from './routes/exports.js';
+import devRouter from './routes/dev.js';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 
@@ -22,6 +23,10 @@ app.use(rateLimiters.tierLimiter);
 app.use('/process', jobsRouter);
 app.use('/status', jobsRouter);
 app.use('/export', exportsRouter);
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/dev', devRouter);
+}
 
 // Error handler
 app.use((err, req, res, next) => {
