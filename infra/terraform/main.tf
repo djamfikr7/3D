@@ -38,6 +38,22 @@ module "database" {
   username                = "appuser"
   password                = "changeme123!"
   instance_class          = "db.t3.micro"
-  subnet_ids              = module.network.public_subnet_ids
+  subnet_ids              = module.network.private_subnet_ids
   vpc_id                  = module.network.vpc_id
 }
+
+module "ssm" {
+  source    = "./modules/ssm"
+  namespace = "capture3d/dev"
+  parameters = {
+    JWT_SECRET = "change-me-dev"
+    S3_BUCKET  = module.storage.bucket_name
+  }
+}
+
+# Example Secrets Manager (optional)
+# module "secrets" {
+#   source        = "./modules/secrets"
+#   name          = "capture3d/dev/app"
+#   secret_string = jsonencode({ db_password = "changeme123!" })
+# }

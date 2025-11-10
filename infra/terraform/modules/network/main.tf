@@ -39,7 +39,7 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# Private subnets (no NAT by default)
+# Private subnets (with optional NAT gateway for egress)
 resource "aws_subnet" "private" {
   for_each                = toset(local.azs_private)
   vpc_id                  = aws_vpc.this.id

@@ -232,6 +232,7 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v1.4: Terraform: private subnets + SSM/Secrets modules; worker ready for real AliceVision binaries; PR auto-open on push.
 - v1.2: Terraform modules (network/storage/queue/db); worker queue adapters refactor; feature extraction stage scaffold.
 - v1.1: SQS adapter path (API/worker), AliceVision stage scaffold, OpenAPI hardened (response errors), CODEOWNERS added.
 - v1.0-pre: Job event timeline persisted with job_events table and minimal job detail page; WS updates integrate into timeline.
