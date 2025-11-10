@@ -29,6 +29,11 @@ router.post('/update-status', async (req, res, next) => {
         await (await import('../lib/db.js')).pool.query(`UPDATE jobs SET ${fields.join(', ')} WHERE id=$${idx}`, [...values, id]);
       }
     } catch (e) { /* ignore db update errors in dev */ }
+    // persist event row
+    try {
+      const { pool } = await import('../lib/db.js');
+      await pool.query('INSERT INTO job_events(job_id,state,progress_pct,message) VALUES ($1,$2,$3,$4)', [id, state, progressPct ?? null, message ?? null]);
+    } catch (e) { /* ignore in dev */ }
     // broadcast event
     try {
       const { broadcastJob } = await import('../lib/events.js');

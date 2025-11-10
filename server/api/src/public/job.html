@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Job Detail</title>
+  <style> body{font-family:sans-serif;margin:16px} .event{margin:4px 0} code{background:#f5f5f5;padding:2px 4px;border-radius:4px} </style>
+</head>
+<body>
+  <h1>Job Detail</h1>
+  <div>
+    <label>Job ID: <input id="job" size="60" placeholder="job_..."/></label>
+    <button id="load">Load</button>
+    <span id="status"></span>
+  </div>
+  <h2>Status</h2>
+  <pre id="s"></pre>
+  <h2>Timeline</h2>
+  <div id="events"></div>
+
+  <script>
+    const jobInput = document.getElementById('job');
+    const status = document.getElementById('status');
+    const s = document.getElementById('s');
+    const events = document.getElementById('events');
+
+    async function loadAll(id){
+      const st = await fetch(`/status/${id}`).then(r=>r.json());
+      s.textContent = JSON.stringify(st, null, 2);
+      const ev = await fetch(`/jobs/${id}/events`).then(r=>r.json());
+      renderEvents(ev);
+      subscribe(id);
+    }
+
+    function renderEvents(list){
+      events.innerHTML='';
+      list.forEach(e=>{
+        const div = document.createElement('div');
+        div.className = 'event';
+        div.textContent = `${new Date(e.ts).toLocaleTimeString()} | ${e.state||''} ${e.progressPct||''}% ${e.message||''}`;
+        events.appendChild(div);
+      });
+    }
+
+    function subscribe(id){
+      const ws = new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/events');
+      ws.onopen = ()=> status.textContent = 'WS connected';
+      ws.onmessage = (ev)=>{
+        try{
+          const d = JSON.parse(ev.data);
+          if (d.type==='job.update' && d.job_id===id){
+            const line = { ts: d.ts, state: d.state, progressPct: d.progressPct, message: d.message };
+            const p = document.createElement('div');
+            p.className = 'event';
+            p.textContent = `${new Date(d.ts).toLocaleTimeString()} | ${d.state||''} ${d.progressPct||''}% ${d.message||''}`;
+            events.prepend(p);
+            s.textContent = JSON.stringify({ id, state:d.state, progressPct:d.progressPct, message:d.message }, null, 2);
+          }
+        } catch(e){}
+      };
+    }
+
+    document.getElementById('load').onclick = ()=>{ const id = jobInput.value.trim(); if (id) loadAll(id); };
+  </script>
+</body>
+</html>

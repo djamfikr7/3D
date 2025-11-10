@@ -55,6 +55,23 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/StatusResponse' }
+  /jobs/{job_id}/events:
+    get:
+      summary: Get job event timeline
+      parameters:
+        - in: path
+          name: job_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/JobEvent' }
+        '404': { description: Not found }
   /export:
     post:
       summary: Create export for a job
@@ -102,3 +119,10 @@ components:
         job_id: { type: string }
         format: { type: string, enum: [glb, usdz, fbx, obj, ply, stl] }
         options: { type: object }
+    JobEvent:
+      type: object
+      properties:
+        state: { type: string }
+        progressPct: { type: integer, minimum: 0, maximum: 100 }
+        message: { type: string }
+        ts: { type: string, format: date-time }

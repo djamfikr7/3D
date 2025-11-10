@@ -40,4 +40,12 @@ router.get('/:job_id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get('/:job_id/events', async (req, res, next) => {
+  try {
+    const id = req.params.job_id;
+    const { rows } = await pool.query('SELECT state, progress_pct as "progressPct", message, ts FROM job_events WHERE job_id=$1 ORDER BY ts DESC LIMIT 200', [id]);
+    res.json(rows);
+  } catch (e) { next(e); }
+});
+
 export default router;
