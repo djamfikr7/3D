@@ -5,6 +5,7 @@ import boto3
 from botocore.config import Config
 import json as jsonlib
 import os as oslib
+from stages.feature_extraction import run_feature_extraction
 try:
     import botocore
 except Exception:
@@ -45,7 +46,10 @@ def process_job(job):
     payload = job.get('payload', {})
     logger.info(f"Processing job {job_id} with payload keys: {list(payload.keys())}")
     update_status(job_id, state='processing', progress=0, message='started')
-    pct = 0
+    # Stage: feature extraction (simulate or run if available)
+    ok = run_feature_extraction(images_dir=payload.get('images_dir','/data/images'), output_dir=payload.get('features_dir','/data/features'))
+    update_status(job_id, state='processing', progress=15 if ok else 5, message='feature_extraction')
+    pct = 15 if ok else 5
     for name, target, delay in STAGES:
         time.sleep(delay)
         pct = target
@@ -62,47 +66,31 @@ def process_job(job):
     update_status(job_id, state='completed', progress=100, message='done')
 
 
-def poll_http_loop():
-    logger.info("Recon worker starting; polling API for jobs (dev mode)...")
+def poll_loop():
+    adapter = None
+    if QUEUE_IMPL == 'sqs' and SQS_URL:
+        from queue_sqs import SQSQueueAdapter
+        adapter = SQSQueueAdapter(SQS_URL)
+        logger.info("Worker using SQS adapter")
+    else:
+        from queue_dev import DevQueueAdapter
+        adapter = DevQueueAdapter(API_BASE)
+        logger.info("Worker using Dev HTTP adapter")
     while True:
         try:
-            r = requests.get(f"{API_BASE}/dev/next-job", timeout=5)
-            if r.status_code == 204:
+            item = adapter.receive()
+            if not item:
                 time.sleep(2)
                 continue
-            r.raise_for_status()
-            job = r.json()
+            job = item['job']
             process_job(job)
-        except requests.RequestException:
-            time.sleep(3)
-        except Exception as e:
-            logger.exception(e)
-            time.sleep(2)
-
-def poll_sqs_loop():
-    import boto3
-    sqs = boto3.client('sqs')
-    logger.info("Recon worker starting; polling SQS for jobs...")
-    while True:
-        try:
-            resp = sqs.receive_message(QueueUrl=SQS_URL, MaxNumberOfMessages=1, WaitTimeSeconds=10, VisibilityTimeout=600)
-            msgs = resp.get('Messages', [])
-            if not msgs:
-                continue
-            m = msgs[0]
-            payload = jsonlib.loads(m['Body'])
-            job = { 'id': payload.get('id'), 'payload': payload }
-            process_job(job)
-            sqs.delete_message(QueueUrl=SQS_URL, ReceiptHandle=m['ReceiptHandle'])
+            adapter.delete(item.get('receipt'))
         except Exception as e:
             logger.exception(e)
             time.sleep(3)
 
 def main():
-    if QUEUE_IMPL == 'sqs' and SQS_URL:
-        poll_sqs_loop()
-    else:
-        poll_http_loop()
+    poll_loop()
 
 if __name__ == '__main__':
     main()

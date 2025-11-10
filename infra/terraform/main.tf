@@ -15,10 +15,29 @@ provider "aws" {
 
 variable "region" { default = "us-east-1" }
 
-# module "network" { source = "./modules/network" }
-# module "database" { source = "./modules/database" }
-# module "queue" { source = "./modules/queue" }
-# module "storage" { source = "./modules/storage" }
-# module "compute_api" { source = "./modules/compute_api" }
-# module "compute_gpu" { source = "./modules/compute_gpu" }
-# module "cdn" { source = "./modules/cdn" }
+module "network" {
+  source   = "./modules/network"
+  cidr     = "10.0.0.0/16"
+  az_count = 2
+}
+
+module "storage" {
+  source       = "./modules/storage"
+  bucket_name  = "capture3d-dev-${var.region}"
+  force_destroy = true
+}
+
+module "queue" {
+  source = "./modules/queue"
+  name   = "capture3d-jobs"
+}
+
+module "database" {
+  source                  = "./modules/database"
+  db_name                 = "capture3d"
+  username                = "appuser"
+  password                = "changeme123!"
+  instance_class          = "db.t3.micro"
+  subnet_ids              = module.network.public_subnet_ids
+  vpc_id                  = module.network.vpc_id
+}

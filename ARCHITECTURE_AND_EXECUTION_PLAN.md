@@ -232,6 +232,8 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v1.2: Terraform modules (network/storage/queue/db); worker queue adapters refactor; feature extraction stage scaffold.
+- v1.1: SQS adapter path (API/worker), AliceVision stage scaffold, OpenAPI hardened (response errors), CODEOWNERS added.
 - v1.0-pre: Job event timeline persisted with job_events table and minimal job detail page; WS updates integrate into timeline.
 - v0.9: Queue adapter abstraction (dev vs SQS stub) and worker uploads a dummy artifact to MinIO on completion.
 - v0.8: Metrics (/metrics) and structured logging; presigned upload flow; minimal Three.js GLB viewer.
