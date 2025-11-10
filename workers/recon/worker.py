@@ -1,8 +1,18 @@
 import os, time, json
 import requests
 from loguru import logger
+import boto3
+from botocore.config import Config
 
 API_BASE = os.environ.get('API_BASE', 'http://api:8080')
+S3_ENDPOINT = os.environ.get('S3_ENDPOINT')
+S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
+S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
+S3_BUCKET = os.environ.get('S3_BUCKET', 'capture3d-dev')
+
+s3 = None
+if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
+    s3 = boto3.client('s3', endpoint_url=S3_ENDPOINT, aws_access_key_id=S3_ACCESS_KEY, aws_secret_access_key=S3_SECRET_KEY, config=Config(signature_version='s3v4'))
 
 STAGES = [
     ('preprocess', 10, 1.0),
@@ -32,6 +42,15 @@ def process_job(job):
         time.sleep(delay)
         pct = target
         update_status(job_id, state='processing', progress=pct, message=name)
+    # Upload a dummy artifact to MinIO/S3
+    try:
+        if s3:
+            key = f"exports/{job_id}.glb"
+            body = b"glTF-placeholder"  # placeholder bytes
+            s3.put_object(Bucket=S3_BUCKET, Key=key, Body=body, ContentType='model/gltf-binary')
+            logger.info(f"Uploaded artifact to s3://{S3_BUCKET}/{key}")
+    except Exception as e:
+        logger.error(f"artifact upload failed: {e}")
     update_status(job_id, state='completed', progress=100, message='done')
 
 

@@ -232,6 +232,7 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v0.9: Queue adapter abstraction (dev vs SQS stub) and worker uploads a dummy artifact to MinIO on completion.
 - v0.8: Metrics (/metrics) and structured logging; presigned upload flow; minimal Three.js GLB viewer.
 - v0.7: OpenAPI spec + request validation, storage abstraction (MinIO via S3 SDK), and minimal web dashboard page with live updates.
 - v0.6: WebSocket progress events and test client page; dev status updates broadcast to /events.

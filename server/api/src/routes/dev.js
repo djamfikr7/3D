@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { dequeueNextJob, updateJobStatus } from '../lib/queue.js';
+import { dequeueNextJob, updateJobStatus } from '../lib/queue/index.js';
 
 const router = Router();
 
@@ -29,6 +29,11 @@ router.post('/update-status', async (req, res, next) => {
         await (await import('../lib/db.js')).pool.query(`UPDATE jobs SET ${fields.join(', ')} WHERE id=$${idx}`, [...values, id]);
       }
     } catch (e) { /* ignore db update errors in dev */ }
+    // broadcast event
+    try {
+      const { broadcastJob } = await import('../lib/events.js');
+      broadcastJob(id, { state, progressPct, message });
+    } catch {}
     if (!updated) return res.status(404).json({ error: 'job not found' });
     res.json({ ok: true });
   } catch (e) { next(e); }

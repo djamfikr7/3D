@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { enqueueJob, getJobStatus } from '../lib/queue.js';
+import { enqueueJob, getJobStatus } from '../lib/queue/index.js';
 import { pool } from '../lib/db.js';
 
 const router = Router();
