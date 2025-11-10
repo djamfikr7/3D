@@ -10,8 +10,16 @@ def run_sfm(matches_dir: str, sfm_dir: str):
     cmd = [bin_name, '--input', matches_dir, '--output', sfm_dir]
     logger.info(f"Running: {' '.join(cmd)}")
     try:
-        subprocess.check_call(cmd)
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        if proc.stdout:
+            logger.info(proc.stdout)
+        if proc.stderr:
+            logger.warning(proc.stderr)
         return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"sfm failed: {e}")
+        if e.stdout:
+            logger.info(e.stdout)
+        if e.stderr:
+            logger.error(e.stderr)
+        logger.error(f"sfm failed with code {e.returncode}")
         return False

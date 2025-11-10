@@ -19,6 +19,10 @@ Generate API TypeScript SDK types:
 
 Services:
 - API: http://localhost:8080/health
+- Dashboard Auth (optional): set DASHBOARD_BASIC_USER/DASHBOARD_BASIC_PASS; or set DISABLE_DASHBOARD_AUTH=true for local dev
+- API env: see server/api/.env.example
+- API TypeScript types: scripts/gen_sdk.* generate to server/api/src/types/api.d.ts
+
 - Dashboard: http://localhost:8080/public/dashboard.html
 - Job detail: http://localhost:8080/public/job.html
 - Upload UI: http://localhost:8080/public/upload.html

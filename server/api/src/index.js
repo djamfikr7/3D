@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 import { init as initEvents, getStats } from './lib/events.js';
 import { OpenApiValidator } from 'express-openapi-validator';
 import pathToOpenAPI from 'path';
+import { dashboardAuth } from './middleware/basicAuth.js';
 
 const app = express();
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
@@ -81,7 +82,7 @@ initEvents(wss);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public', dashboardAuth, express.static(path.join(__dirname, 'public')));
 app.get('/events/stats', (req, res) => res.json(getStats()));
 
 import { runMigrations } from './db/migrate.js';
