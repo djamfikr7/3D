@@ -1,0 +1,37 @@
+name: Auto Open PR on Branch Push
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+      - 'release/**'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Extract branch info
+        id: vars
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+      - name: Create PR if missing (to main)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = core.getInput('branch') || process.env.BRANCH || '${{ steps.vars.outputs.branch }}';
+            const base = 'main';
+            // List existing PRs from branch
+            const { data: prs } = await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${branch}` });
+            if (prs.length) {
+              core.info(`PR already exists for ${branch}: #${prs[0].number}`);
+              return;
+            }
+            const title = `docs(architecture): add single-source plan, owner roster, env topology; enforce maintenance rules`;
+            const body = `This PR was auto-created by the Auto Open PR workflow.\n\nIt introduces or updates the single source-of-truth architecture plan and related standards. If the Doc Guardian check fails, please update ARCHITECTURE_AND_EXECUTION_PLAN.md with a Change Log or ADR entry.`;
+            const { data: pr } = await github.rest.pulls.create({ owner: context.repo.owner, repo: context.repo.repo, head: branch, base, title, body });
+            core.info(`Created PR #${pr.number}: ${pr.html_url}`);
