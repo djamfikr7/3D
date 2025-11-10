@@ -3,7 +3,7 @@ import { Router } from 'express';
 const router = Router();
 
 import { pool } from '../lib/db.js';
-import { getPresignedGetUrl } from '../lib/storage.js';
+import { getPresignedGetUrl, STORAGE_DISABLED } from '../lib/storage.js';
 
 router.post('/', async (req, res, next) => {
   try {
@@ -11,7 +11,7 @@ router.post('/', async (req, res, next) => {
     if (!job_id || !format) return res.status(400).json({ error: 'job_id and format are required' });
     const export_id = `exp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
     const key = `exports/${job_id}.${format}`;
-    const url = await getPresignedGetUrl(key, 3600);
+    const url = STORAGE_DISABLED ? `http://localhost:8080/public/viewer.html#${encodeURIComponent(key)}` : await getPresignedGetUrl(key, 3600);
     await pool.query('INSERT INTO exports (id, job_id, format, url, size_bytes) VALUES ($1,$2,$3,$4,$5)', [export_id, job_id, format, url, null]);
     res.json({ export_id, url });
   } catch (e) { next(e); }
