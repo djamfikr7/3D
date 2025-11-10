@@ -10,7 +10,11 @@
     "dev:node": "set STORAGE_DISABLED=true&& set NODE_ENV=development&& npm run migrate && node src/index.js",
     "start": "node src/index.js",
     "lint": "echo 'TODO: add eslint' && exit 0",
-    "test": "echo 'TODO: add tests' && exit 0"
+    "test": "echo 'TODO: add tests' && exit 0",
+    "gen:types": "openapi-typescript openapi.yaml -o src/types/api.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^6.7.6"
   },
   "dependencies": {
     "cors": "^2.8.5",

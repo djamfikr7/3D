@@ -7,9 +7,15 @@ Run dev stack with Docker:
 - Windows (PowerShell): `./scripts/run_dev.ps1`
 
 Run without Docker (local dev):
+- Start Postgres (Docker-only): `./scripts/db_only.ps1` (Windows) or `bash scripts/db_only.sh` (macOS/Linux)
 - API: `./scripts/dev_api.ps1` (Windows) or `bash scripts/dev_api.sh` (macOS/Linux)
 - Worker: `./scripts/dev_worker.ps1` (Windows) or `bash scripts/dev_worker.sh` (macOS/Linux)
   - This uses dev in-memory queue and disables storage (presigns return local placeholders).
+
+Generate API TypeScript SDK types:
+- Windows: `./scripts/gen_sdk.ps1`
+- macOS/Linux: `bash scripts/gen_sdk.sh`
+  - Output: server/api/src/types/api.d.ts
 
 Services:
 - API: http://localhost:8080/health
