@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WS Test</title>
+    <style> body { font-family: sans-serif; margin: 20px; } .event { margin: 6px 0; } </style>
+  </head>
+  <body>
+    <h1>WebSocket Events Test</h1>
+    <p>Connects to <code>/events</code> and prints job.update events.</p>
+    <div id="status">Connecting...</div>
+    <ul id="log"></ul>
+    <script>
+      const status = document.getElementById('status');
+      const log = document.getElementById('log');
+      const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/events');
+      ws.onopen = () => status.textContent = 'Connected';
+      ws.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.type === 'job.update') {
+            const li = document.createElement('li');
+            li.className = 'event';
+            li.textContent = `${new Date(data.ts).toLocaleTimeString()} | ${data.job_id} ${data.state} ${data.progressPct || ''} ${data.message || ''}`;
+            log.prepend(li);
+          }
+        } catch {}
+      };
+      ws.onclose = () => status.textContent = 'Closed';
+      ws.onerror = () => status.textContent = 'Error';
+    </script>
+  </body>
+</html>

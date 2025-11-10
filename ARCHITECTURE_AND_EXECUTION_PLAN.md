@@ -232,6 +232,7 @@ Owner roster:
 - E6-S3: Spot instance strategy & fallbacks [Owner: Jordan Lee] [Status: Todo]
 
 ## 15. Change Log
+- v0.6: WebSocket progress events and test client page; dev status updates broadcast to /events.
 - v0.5: Postgres persistence with migrations; API creates jobs in DB and dev worker updates status in DB.
 - v0.4: Dev E2E flow with docker-compose, dev endpoints (/dev/*), worker polling, and in-memory FIFO queue.
 - v0.3: Sprint 1 scaffolding added (API skeleton, worker scaffold, Terraform structure, CI pipeline, placeholders for web/mobile).
