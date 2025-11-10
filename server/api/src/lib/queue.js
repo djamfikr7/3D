@@ -1,4 +1,5 @@
-// In-memory FIFO queue for dev; replace with SQS in prod
+// Deprecated: moved to lib/queue/dev_inmemory.js; kept for backward compatibility
+export * from './queue/index.js';
 const jobs = new Map(); // id -> {id, state, progressPct, payload}
 const fifo = []; // array of job ids
 
